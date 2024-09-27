@@ -1,18 +1,23 @@
 pipeline {
-    agent any 
+    agent any
+    parameters {
+    choice(name: 'Branch', choices: ['master', 'dev', 'uat'], description: 'Pick something')
+    }
     environment {
-    DOCKERHUB_CREDENTIALS = credentials('valaxy-dockerhub')
+    DOCKERHUB_CREDENTIALS = credentials('kandula-dockerhub')
+//     BRANCH = "${env.GIT_BRANCH}.${BUILD_NUMBER}"
+//     TAG = BRANCH.substring(7,BRANCH.length())   
     }
     stages { 
         stage('SCM Checkout') {
             steps{
-            git 'https://github.com/ravdy/nodejs-demo.git'
+            git 'https://github.com/kandula1578/nodejs.git'
             }
         }
 
         stage('Build docker image') {
-            steps {  
-                sh 'docker build -t valaxy/nodeapp:$BUILD_NUMBER .'
+            steps {
+                sh 'docker build -t kandula17/nodeapp:${Branch} .'
             }
         }
         stage('login to dockerhub') {
@@ -20,11 +25,11 @@ pipeline {
                 sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
-        stage('push image') {
-            steps{
-                sh 'docker push valaxy/nodeapp:$BUILD_NUMBER'
-            }
-        }
+//         stage('push image') {
+//             steps{
+//                 sh 'docker push kandula17/nodeapp:${GIT_BRANCH#*/}'
+//             }
+//         }
 }
 post {
         always {
@@ -32,4 +37,3 @@ post {
         }
     }
 }
-
